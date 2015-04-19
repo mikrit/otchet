@@ -4,30 +4,61 @@ class Controller
 {
 	function report($client)
 	{
-		//var_dump($client);
+		$model = new Model_Query($client);
 
-		/*if($client == 'indep')
+		$data = $this->get_new_data($client);
+		$model->add_new_data($data);
+
+
+		return $data;
+	}
+
+	function report_($client)
+	{
+		$model = new Model_Query($client);
+
+		//$client = 'indep';
+
+		// Получаем дату последнего отчёта
+		$time = $model->get_date_otchet($client);
+
+		// Если нет клиента дата = false
+		if($time == false)
 		{
-			$data = array(
-				0 => array('a' => 1, 'b' => 2),
-				1 => array('a' => 3, 'b' => 4),
-				2 => array('a' => 5, 'b' => 6),
-				3 => array('a' => 7, 'b' => 8)
-			);
+			$model->add_client_in_date_otchet($client);
+
+			// Собераем и сохраняем данные по новому клиенту
+			$data = $this->get_new_data($client);
+			$model->add_new_data($data);
+
+			$time['date'] = time();
 		}
-		else
+
+
+		// Если дата отчёта меньше текущей даты то берём новые данные, записываем их в БД и меняем дату на текущую
+		if (mktime(9, 0, 0, date("m"), date("d"), date("Y")) > $time['date'])
 		{
-			$data = array(
-				0 => array('a' => 10, 'b' => 11),
-				1 => array('a' => 12, 'b' => 14),
-				2 => array('a' => 14, 'b' => 15),
-				3 => array('a' => 16, 'b' => 17)
-			);
-		}*/
+			$data = $this->get_new_data($client);
+			$model->add_new_data($data);
 
-		$model =  new Model_Query($client);
+			$model->update_date_otchet($client);
+		}
 
-		$data = $model->otladka_reliza('avilon');
+		$data = $model->get_data_on_period($client);
+
+		return $data;
+	}
+
+	//
+	public function get_new_data($client)
+	{
+		$model = new Model_Query($client);
+
+		$data = array(
+			'client' => $client,
+			'date' => time(),
+			'all' => $model->all($client),
+		);
 
 		return $data;
 	}

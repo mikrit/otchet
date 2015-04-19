@@ -2,24 +2,89 @@
 
 class Model_Query
 {
-	private $_db;
-	private $_client;
-	private $_config;
+	private $db;
+	private $clients;
 
-	/**
-	 * @param string $client
-	 */
-	function __construct($client = 'avilon')
+	function __construct()
 	{
-		$this->_db = Database::get_instance();
-		$this->_client = $client;
-		$this->_config = Lib_Config::get_instance();
+		$this->db = Database::get_instance();
+		$this->clients = Lib_Config::get_config('clients');
 	}
 
-	function otladka_reliza($client = 'avilon')
+	// Получаем дату последнего отчёта клиента если есть иначе false
+	public function get_date_otchet($client)
 	{
-		$clients = Lib_Config::get_config('clients');
-		$reliz = $clients[$client]['reliz'];
+		$query = "SELECT date FROM date_otchet WHERE client=".$client;
+
+		$result = $this->db->query($query);
+
+		if($result)
+		{
+			return $result->fetch_assoc();
+		}
+
+		return false;
+	}
+
+	// Обновляем дату отчёта клиента
+	public function update_date_otchet($client)
+	{
+		$query = "UPDATE date_otchet SET date=".time()." WHERE client=".$client;
+		$this->db->query($query);
+	}
+
+	// Добавление нового клиента и дату последнего отчёта
+	public function add_client_in_date_otchet($client)
+	{
+		$query = "INSERT INTO date_otchet (client, date) VALUES ( '".$client."',".time()." )";
+		$this->db->query($query);
+	}
+
+	public function add_new_data($data)
+	{
+		$keys = '';
+		$values = '';
+
+		foreach($data as $key => $val)
+		{
+			$keys .= $key;
+			$values .= $val;
+		}
+
+		var_dump($keys, $values);
+		die;
+
+		$query = "INSERT INTO date_otchet (client, date) VALUES ( '".$client."',".time()." )";
+		$this->db->query($query);
+	}
+
+	public function get_data_on_period($client, $period = 21)
+	{
+		$back_date = mktime(9, 0, 0, date("m"), date("d")-$period, date("Y"));
+
+		$query = "SELECT * FROM data_otchet as do WHERE do.client = ".$client." AND do.date >".$back_date;
+
+		$result = $this->db->query($query);
+
+		return $result->fetch_assoc();
+	}
+
+	public function all($client)
+	{
+		$query = "SELECT COUNT(*) as count FROM issues i
+					JOIN issue_statuses s ON i.status_id=s.id
+					WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+					AND (s.is_closed = 0 OR i.created_on >= STR_TO_DATE('".date('d,m,Y')."','%d,%m,%Y'))";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];;
+	}
+
+
+	function otladka_reliza($client)
+	{
+		$reliz = $$this->clients[$client]['reliz'];
 
 		$query = "
 			SELECT
@@ -37,7 +102,7 @@ class Model_Query
 			WHERE i.project_id IN(47,48,52)
 			AND r.value='$reliz'";
 
-		$result = $this->_db->query($query);
+		$result = $this->db->query($query);
 
 		return $result->fetch_assoc();
 	}

@@ -34,7 +34,7 @@
 	<tr>
 		<td id="f">
 			<div id="footer">
-				<p>Egor Isaev &copy;<?=date("Y")?> All Rights Reserved.</p>
+				<p>Egor Isaev &copy;<?=date("Y") == '2015' ? '2015' : '2015-'.date("Y")?> All Rights Reserved.</p>
 			</div>
 		</td>
 	</tr>

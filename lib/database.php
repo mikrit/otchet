@@ -5,11 +5,6 @@ class Database
 	private $_connection;
 	private static $_instance;
 
-	private $_host = "192.168.14.220";
-	private $_username = "redmineRead";
-	private $_password = "hf57slbvbn";
-	private $_database = "redmine_0610";
-
 	public static function get_instance()
 	{
 		if (!self::$_instance)
@@ -21,7 +16,10 @@ class Database
 
 	private function __construct()
 	{
-		$this->_connection = new mysqli($this->_host, $this->_username, $this->_password, $this->_database);
+		$db = Lib_Config::get_config('database');
+		$connect = $db['mysql'];
+
+		$this->_connection = new mysqli($connect['host'], $connect['username'], $connect['password'], $connect['database']);
 
 		if (mysqli_connect_errno()) {
 			printf("Подключение к серверу MySQL невозможно. Код ошибки: %s\n", mysqli_connect_error());

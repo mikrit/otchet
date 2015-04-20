@@ -21,8 +21,6 @@ class Controller
 			// Собераем и сохраняем данные по новому клиенту
 			$data = $this->get_new_data($client);
 
-			var_dump($data);
-
 			$model->add_new_data($data);
 
 			$time['date'] = time();
@@ -51,10 +49,12 @@ class Controller
 	{
 		$model = new Model_Query($client);
 
+		$all = $model->all($client);
+
 		$data = array(
 			'client' => $client,
 			'date' => time(),
-			'all' => $model->all($client),
+			'all' => $all,
 		);
 
 		return $data;

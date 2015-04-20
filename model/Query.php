@@ -85,6 +85,11 @@ class Model_Query
 
 	public function all($client)
 	{
+		if(!isset($this->clients[$client]['projects']))
+		{
+			return false;
+		}
+
 		$query = "SELECT COUNT(*) as count FROM issues i
 					JOIN issue_statuses s ON i.status_id=s.id
 					WHERE i.project_id IN('".$this->clients[$client]['projects']."')
@@ -92,32 +97,6 @@ class Model_Query
 
 		$result = $this->db->query($query)->fetch_assoc();
 
-		return $result['count'];;
-	}
-
-
-	function otladka_reliza($client)
-	{
-		$reliz = $$this->clients[$client]['reliz'];
-
-		$query = "
-			SELECT
-			COUNT(*) as count
-			FROM issues i
-			JOIN projects p ON i.project_id=p.id
-			JOIN trackers t ON i.tracker_id=t.id
-			JOIN issue_statuses st ON i.status_id=st.id
-			LEFT JOIN (SELECT cv.customized_id,cv.value
-			FROM custom_values cv,
-			custom_fields cf
-			WHERE cf.id=17
-			AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
-			LEFT JOIN users u ON i.assigned_to_id=u.id
-			WHERE i.project_id IN(47,48,52)
-			AND r.value='$reliz'";
-
-		$result = $this->db->query($query);
-
-		return $result->fetch_assoc();
+		return $result['count'];
 	}
 }

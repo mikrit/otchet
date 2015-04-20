@@ -9,5 +9,6 @@ return array(
 	'indep' => array(
 		'reliz' => '1.419.5.N',
 		'dev' => 'DEV_N',
+		'projects' => '15,29',
 	),
 );

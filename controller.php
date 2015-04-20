@@ -2,18 +2,9 @@
 
 class Controller
 {
-	function report($client)
-	{
-		$model = new Model_Query($client);
+	function report
 
-		$data = $this->get_new_data($client);
-		$model->add_new_data($data);
-
-
-		return $data;
-	}
-
-	function report_($client)
+	($client)
 	{
 		$model = new Model_Query($client);
 
@@ -29,11 +20,17 @@ class Controller
 
 			// Собераем и сохраняем данные по новому клиенту
 			$data = $this->get_new_data($client);
+
+			var_dump($data);
+
 			$model->add_new_data($data);
 
 			$time['date'] = time();
 		}
 
+		//var_dump(mktime(8, 0, 0, date("m"), date("d"), date("Y")));
+
+		//$time['date'] = 1429502400;
 
 		// Если дата отчёта меньше текущей даты то берём новые данные, записываем их в БД и меняем дату на текущую
 		if (mktime(9, 0, 0, date("m"), date("d"), date("Y")) > $time['date'])

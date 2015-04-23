@@ -30,7 +30,7 @@ class Model_Query
 	public function update_date_otchet($client)
 	{
 		$query = "UPDATE date_otchet SET date=".time()." WHERE client='".$client."'";
-		$this->db->query($query);
+		//$this->db->query($query);
 	}
 
 	// Добавление нового клиента и дату последнего отчёта
@@ -85,15 +85,373 @@ class Model_Query
 
 	public function all($client)
 	{
-		if(!isset($this->clients[$client]['projects']))
+		if(
+			!isset($this->clients[$client]['projects']) ||
+			!isset($this->clients[$client]['date'])
+		)
 		{
-			return false;
+			return null;
 		}
 
 		$query = "SELECT COUNT(*) as count FROM issues i
 					JOIN issue_statuses s ON i.status_id=s.id
-					WHERE i.project_id IN('".$this->clients[$client]['projects']."')
-					AND (s.is_closed = 0 OR i.created_on >= STR_TO_DATE('".date('d,m,Y')."','%d,%m,%Y'))";
+					WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+					AND (s.is_closed = 0 OR	i.created_on >= STR_TO_DATE('".date($this->clients[$client]['date'])."','%d,%m,%Y'))";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	public function all_in_work($client)
+	{
+		if(!isset($this->clients[$client]['projects']))
+		{
+			return null;
+		}
+
+		$query = "SELECT
+					COUNT(*) as count
+					FROM issues i
+					JOIN issue_statuses s ON i.status_id=s.id
+					WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+					AND s.id=2";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	public function dorobotok_fix($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			      COUNT(*) as count
+			FROM issues i
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=14
+			    AND cv.custom_field_id=cf.id) pay ON i.id=pay.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND pay.value = 'Fix'
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	public function dorobotok_not_fix($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			      COUNT(*) as count
+			FROM issues i
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=14
+			    AND cv.custom_field_id=cf.id) pay ON i.id=pay.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND pay.value = 'Not Fix'
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	public function dorobotok_bez_ocenki($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			      COUNT(*) as count
+			FROM issues i
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=14
+			    AND cv.custom_field_id=cf.id) pay ON i.id=pay.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND (pay.value IS NULL || pay.value = '')
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	public function errors($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			COUNT(*) AS count
+			FROM issues i
+			JOIN trackers t ON i.tracker_id=t.id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND t.name='Ошибки'
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	public function my($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['analitic'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			COUNT(*) AS count
+			FROM issues i
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=37
+			    AND cv.custom_field_id=cf.id) an ON i.id=an.customized_id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND an.value = '".$this->clients[$client]['analitic']."'
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	public function all_bez_rechena_y_zakrita($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			COUNT(*) as count
+			FROM issues i
+			JOIN issue_statuses s ON i.status_id=s.id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND s.id<>3
+			AND s.id<>5
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	public function all_in_reliz($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			COUNT(*) as count
+			FROM issues i
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	public function all_bez_rechena_y_zakrita_my($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['analitic'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			COUNT(*) as count
+			FROM issues i
+			JOIN issue_statuses s ON i.status_id=s.id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=37
+			    AND cv.custom_field_id=cf.id) an ON i.id=an.customized_id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND s.id<>3
+			AND s.id<>5
+			AND an.value = '".$this->clients[$client]['analitic']."'
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	public function all_in_reliz_my($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['analitic'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			COUNT(*) as count
+			FROM issues i
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=37
+			    AND cv.custom_field_id=cf.id) an ON i.id=an.customized_id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND an.value = '".$this->clients[$client]['analitic']."'
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	public function not_fix_analiz_bez_ocenki($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			COUNT(*) as count
+			FROM issues i
+			JOIN issue_statuses s ON i.status_id=s.id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND s.id<>3
+			AND s.id<>5
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	public function all_in_analiz_more_day_naivishiy($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			COUNT(*) as count
+			FROM issues i
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND r.value='".$this->clients[$client]['reliz']."'";
 
 		$result = $this->db->query($query)->fetch_assoc();
 

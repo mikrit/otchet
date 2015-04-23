@@ -49,12 +49,22 @@ class Controller
 	{
 		$model = new Model_Query($client);
 
-		$all = $model->all($client);
-
 		$data = array(
 			'client' => $client,
 			'date' => time(),
-			'all' => $all,
+			'all' => $model->all($client),
+			'all_in_work' => $model->all_in_work($client),
+			'dorobotok_fix' => $model->dorobotok_fix($client),
+			'dorobotok_not_fix' => $model->dorobotok_not_fix($client),
+			'dorobotok_bez_ocenki' => $model->dorobotok_bez_ocenki($client),
+			'errors' => $model->errors($client),
+			'my' => $model->my($client),
+			'all_bez_rechena_y_zakrita' => $model->all_bez_rechena_y_zakrita($client),
+			'all_in_reliz' => $model->all_in_reliz($client),
+			'all_bez_rechena_y_zakrita_my' => $model->all_bez_rechena_y_zakrita_my($client),
+			'all_in_reliz_my' => $model->all_in_reliz_my($client),
+			'not_fix_analiz_bez_ocenki' => $model->not_fix_analiz_bez_ocenki($client),
+			'all_in_analiz_more_day_naivishiy' => $model->all_in_analiz_more_day_naivishiy($client),
 		);
 
 		return $data;

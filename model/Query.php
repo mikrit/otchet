@@ -416,15 +416,21 @@ class Model_Query
 		$query = "SELECT
 			COUNT(*) as count
 			FROM issues i
-			JOIN issue_statuses s ON i.status_id=s.id
+			JOIN issue_statuses st ON i.status_id=st.id
 			LEFT JOIN (SELECT cv.customized_id,cv.value
 			    FROM custom_values cv,
 			    custom_fields cf
 			    WHERE cf.id=17
 			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=14
+			    AND cv.custom_field_id=cf.id) pay ON i.id=pay.customized_id
 			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
-			AND s.id<>3
-			AND s.id<>5
+			AND pay.value = 'Not Fix'
+			AND st.name=21
+			AND i.estimated_hours IS NULL
 			AND r.value='".$this->clients[$client]['reliz']."'";
 
 		$result = $this->db->query($query)->fetch_assoc();

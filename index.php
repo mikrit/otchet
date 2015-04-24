@@ -26,6 +26,7 @@ $clients = array
 	'sviaznoy' => 'Связной',
 );
 
+$config_clients = Lib_Config::get_config('clients');
 //обращение к модели данных
 if(isset($_GET['client']))
 {
@@ -38,6 +39,8 @@ else
 	$data = $controller->report(array_search($first_elem, $clients));
 	$client = $first_elem;
 }
+
+
 
 $view_menu = View::factory('menu');
 $view_menu->clients = $clients;

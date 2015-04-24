@@ -15,7 +15,7 @@
 	<tr id="h">
 		<td>
 			<div id="header">
-				Отчёт по клиенту: <?=$client?>
+				Отчёт по клиенту: <?=$client?><br/>
 			</div>
 		</td>
 	</tr>

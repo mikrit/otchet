@@ -122,6 +122,7 @@ class Model_Query
 		return $result['count'];
 	}
 
+	// Доработок fix
 	public function dorobotok_fix($client)
 	{
 		if(
@@ -154,6 +155,7 @@ class Model_Query
 		return $result['count'];
 	}
 
+	// Доработок not fix
 	public function dorobotok_not_fix($client)
 	{
 		if(
@@ -186,6 +188,7 @@ class Model_Query
 		return $result['count'];
 	}
 
+	// Доработок без оценки
 	public function dorobotok_bez_ocenki($client)
 	{
 		if(
@@ -218,6 +221,7 @@ class Model_Query
 		return $result['count'];
 	}
 
+	// Ошибок
 	public function errors($client)
 	{
 		if(
@@ -246,6 +250,7 @@ class Model_Query
 		return $result['count'];
 	}
 
+	// Я-аналитик
 	public function my($client)
 	{
 		if(
@@ -279,6 +284,7 @@ class Model_Query
 		return $result['count'];
 	}
 
+	// В статусе, отличном от решена и закрыта
 	public function all_bez_rechena_y_zakrita($client)
 	{
 		if(
@@ -308,6 +314,7 @@ class Model_Query
 		return $result['count'];
 	}
 
+	// Всего в релизе
 	public function all_in_reliz($client)
 	{
 		if(
@@ -334,6 +341,7 @@ class Model_Query
 		return $result['count'];
 	}
 
+	// В статусе, отличном от решена и закрыта мои
 	public function all_bez_rechena_y_zakrita_my($client)
 	{
 		if(
@@ -370,6 +378,7 @@ class Model_Query
 		return $result['count'];
 	}
 
+	// Всего в релизе мои
 	public function all_in_reliz_my($client)
 	{
 		if(
@@ -403,6 +412,7 @@ class Model_Query
 		return $result['count'];
 	}
 
+	// not fix в статусе Анализ без оценки
 	public function not_fix_analiz_bez_ocenki($client)
 	{
 		if(
@@ -438,6 +448,7 @@ class Model_Query
 		return $result['count'];
 	}
 
+	// Всего в анализе более 1 дня(Наивысший), более 2 дней(остальные)
 	public function all_in_analiz_more_day_naivishiy($client)
 	{
 		if(
@@ -451,12 +462,105 @@ class Model_Query
 		$query = "SELECT
 			COUNT(*) as count
 			FROM issues i
+			JOIN issue_statuses st ON i.status_id=st.id
 			LEFT JOIN (SELECT cv.customized_id,cv.value
 			    FROM custom_values cv,
 			    custom_fields cf
 			    WHERE cf.id=17
 			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
 			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND st.id=21
+			AND
+			(
+			   (TO_DAYS('".date('Y,m,d')."')-TO_DAYS(i.updated_on) > 1 AND i.priority_id=7)
+			   OR
+			   (TO_DAYS('".date('Y,m,d')."')-TO_DAYS(i.updated_on) > 2 AND i.priority_id<>7)
+			)
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	// not fix в статусе Анализ без оценки
+	public function not_fix_analiz_bez_ocenki_my($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['analitic'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			COUNT(*) as count
+			FROM issues i
+			JOIN issue_statuses st ON i.status_id=st.id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=37
+			    AND cv.custom_field_id=cf.id) an ON i.id=an.customized_id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=14
+			    AND cv.custom_field_id=cf.id) pay ON i.id=pay.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND pay.value = 'Not Fix'
+			AND st.name=21
+			AND i.estimated_hours IS NULL
+			AND an.value = '".$this->clients[$client]['analitic']."'
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	// Всего в анализе более 1 дня(Наивысший), более 2 дней(остальные) мои
+	public function all_in_analiz_more_day_naivishiy_my($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['analitic'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			COUNT(*) as count
+			FROM issues i
+			JOIN issue_statuses st ON i.status_id=st.id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=37
+			    AND cv.custom_field_id=cf.id) an ON i.id=an.customized_id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND st.id=21
+			AND
+			(
+			   (TO_DAYS('".date('Y,m,d')."')-TO_DAYS(i.updated_on) > 1 AND i.priority_id=7)
+			   OR
+			   (TO_DAYS('".date('Y,m,d')."')-TO_DAYS(i.updated_on) > 2 AND i.priority_id<>7)
+			)
+			AND an.value = '".$this->clients[$client]['analitic']."'
 			AND r.value='".$this->clients[$client]['reliz']."'";
 
 		$result = $this->db->query($query)->fetch_assoc();

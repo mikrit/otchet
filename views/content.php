@@ -140,10 +140,26 @@
 		</td>
 		<?foreach($data as $key => $val){?>
 			<td>
-				<?=$val['not_fix_analiz_bez_ocenki']?>/<?=$val['all_in_analiz_more_day_naivishiy']?>
+				&nbsp;
 			</td>
 			<td>
+				<?=$val['not_fix_analiz_bez_ocenki_my']?>/<?=$val['all_in_analiz_more_day_naivishiy_my']?>
+			</td>
+		<?}?>
+	</tr>
+	<tr class="task_1">
+		<td>
+			Просрочено в Анализе notfix доработок(Из всего not fix в Анализе not fix)
+		</td>
+		<td>
+			В статусе Анализ/Всего в анализе более 1 дня(Наивысший), более 2 дней(остальные)
+		</td>
+		<?foreach($data as $key => $val){?>
+			<td>
 				&nbsp;
+			</td>
+			<td>
+				<?=$val['not_fix_analiz_bez_ocenki_my']?>/<?=$val['all_in_analiz_more_day_naivishiy_my']?>
 			</td>
 		<?}?>
 	</tr>

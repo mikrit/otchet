@@ -12,5 +12,7 @@ return array(
 		'reliz' => '1.419.5.N',
 		'dev' => 'DEV_N',
 		'projects' => '15, 29',
+		'date' => '1, 3, 2015',
+		'analitic' => 'Михаил Гринчук',
 	),
 );

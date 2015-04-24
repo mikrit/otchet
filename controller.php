@@ -2,9 +2,7 @@
 
 class Controller
 {
-	function report
-
-	($client)
+	function report($client)
 	{
 		$model = new Model_Query($client);
 
@@ -63,8 +61,8 @@ class Controller
 			'all_in_reliz' => $model->all_in_reliz($client),
 			'all_bez_rechena_y_zakrita_my' => $model->all_bez_rechena_y_zakrita_my($client),
 			'all_in_reliz_my' => $model->all_in_reliz_my($client),
-			'not_fix_analiz_bez_ocenki' => $model->not_fix_analiz_bez_ocenki($client),
-			'all_in_analiz_more_day_naivishiy' => $model->all_in_analiz_more_day_naivishiy($client),
+			'not_fix_analiz_bez_ocenki_my' => $model->not_fix_analiz_bez_ocenki_my($client),
+			'all_in_analiz_more_day_naivishiy_my' => $model->all_in_analiz_more_day_naivishiy_my($client),
 		);
 
 		return $data;

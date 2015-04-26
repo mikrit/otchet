@@ -13,7 +13,7 @@
 	</tr>
 	<tr class="task_1">
 		<td colspan="2">
-
+			&nbsp;
 		</td>
 		<?foreach($data as $key => $val){?>
 			<td>
@@ -56,7 +56,7 @@
 		</td>
 		<?foreach($data as $key => $val){?>
 			<td>
-				<?=$val['dorobotok_fix']?>
+				<?=$val['dorabotok_fix']?>
 			</td>
 			<td>
 				&nbsp;
@@ -69,7 +69,7 @@
 		</td>
 		<?foreach($data as $key => $val){?>
 			<td>
-				<?=$val['dorobotok_not_fix']?>
+				<?=$val['dorabotok_not_fix']?>
 			</td>
 			<td>
 				&nbsp;
@@ -82,7 +82,7 @@
 		</td>
 		<?foreach($data as $key => $val){?>
 			<td>
-				<?=$val['dorobotok_bez_ocenki']?>
+				<?=$val['dorabotok_bez_ocenki']?>
 			</td>
 			<td>
 				&nbsp;
@@ -133,33 +133,65 @@
 	</tr>
 	<tr class="task_2">
 		<td>
-			Просрочено без оценки(Из всего not fix в Анализе)
+			Просрочено без оценки(Из всего в Анализе)
 		</td>
 		<td>
-			not fix в статусе Анализ без оценки/Всего в анализе более 1 дня(Наивысший), более 2 дней(остальные)
+			В статусе Анализ без оценки/Всего в анализе более 1 дня(Наивысший), более 2 дней(остальные)
 		</td>
 		<?foreach($data as $key => $val){?>
 			<td>
-				&nbsp;
+				<?=$val['analiz_bez_ocenki_more_day_naivishiy']?>/<?=$val['analiz_bez_ocenki']?>
 			</td>
 			<td>
-				<?=$val['not_fix_analiz_bez_ocenki_my']?>/<?=$val['all_in_analiz_more_day_naivishiy_my']?>
+				<?=$val['analiz_bez_ocenki_more_day_naivishiy_my']?>/<?=$val['analiz_bez_ocenki_my']?>
 			</td>
 		<?}?>
 	</tr>
 	<tr class="task_1">
 		<td>
-			Просрочено в Анализе notfix доработок(Из всего not fix в Анализе not fix)
+			Просрочено notfix доработок(Из всего not fix в Анализе)
 		</td>
 		<td>
 			В статусе Анализ/Всего в анализе более 1 дня(Наивысший), более 2 дней(остальные)
 		</td>
 		<?foreach($data as $key => $val){?>
 			<td>
-				&nbsp;
+				<?=$val['analiz_notfix_more_day_naivishiy']?>/<?=$val['analiz_notfix']?>
 			</td>
 			<td>
-				<?=$val['not_fix_analiz_bez_ocenki_my']?>/<?=$val['all_in_analiz_more_day_naivishiy_my']?>
+				<?=$val['analiz_notfix_more_day_naivishiy_my']?>/<?=$val['analiz_notfix_my']?>
+			</td>
+		<?}?>
+	</tr>
+	<tr class="task_2">
+		<td>
+			Просрочено fix доработок(Из всего fix в Анализе)
+		</td>
+		<td>
+			В статусе Анализ/Всего в анализе более 1 дня(Наивысший), более 2 дней(остальные)
+		</td>
+		<?foreach($data as $key => $val){?>
+			<td>
+				<?=$val['analiz_fix_more_day_naivishiy']?>/<?=$val['analiz_fix']?>
+			</td>
+			<td>
+				<?=$val['analiz_fix_more_day_naivishiy_my']?>/<?=$val['analiz_fix_my']?>
+			</td>
+		<?}?>
+	</tr>
+	<tr class="task_1">
+		<td>
+			Просрочено в Анализе ошибок(Из всего в анализе)
+		</td>
+		<td>
+			более 1 дня(Наивысший), более 2 дней(остальные)
+		</td>
+		<?foreach($data as $key => $val){?>
+			<td>
+				<?=$val['analiz_error_more_day_naivishiy']?>/<?=$val['analiz_error']?>
+			</td>
+			<td>
+				<?=$val['analiz_error_more_day_naivishiy_my']?>/<?=$val['analiz_error_my']?>
 			</td>
 		<?}?>
 	</tr>

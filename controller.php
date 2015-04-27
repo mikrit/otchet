@@ -6,8 +6,6 @@ class Controller
 	{
 		$model = new Model_Query($client);
 
-		//$client = 'indep';
-
 		// Получаем дату последнего отчёта
 		$time = $model->get_date_otchet($client);
 
@@ -23,10 +21,6 @@ class Controller
 
 			$time['date'] = time();
 		}
-
-		//var_dump(mktime(8, 0, 0, date("m"), date("d"), date("Y")));
-
-		//$time['date'] = 1429502400;
 
 		// Если дата отчёта меньше текущей даты то берём новые данные, записываем их в БД и меняем дату на текущую
 		if (mktime(9, 0, 0, date("m"), date("d"), date("Y")) > $time['date'])
@@ -77,6 +71,12 @@ class Controller
 			'analiz_error_more_day_naivishiy' => $model->all_in_analiz_more_day_naivishiy_error($client),
 			'analiz_error_my' => $model->analiz_error_my($client),
 			'analiz_error_more_day_naivishiy_my' => $model->all_in_analiz_more_day_naivishiy_error_my($client),
+			'dedline_on_sk_2_day' => $model->dedline_on_sk_2_day($client),
+			'dedline_on_sk_3_day' => $model->dedline_on_sk_3_day($client),
+			'dedline_on_sk_2_day_my' => $model->dedline_on_sk_2_day_my($client),
+			'dedline_on_sk_3_day_my' => $model->dedline_on_sk_3_day_my($client),
+			/*'dedline_10_day' => $model->dedline_10_day($client),
+			'dedline_10_day_my' => $model->dedline_10_day_my($client),*/
 		);
 
 		return $data;

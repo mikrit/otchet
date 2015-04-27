@@ -30,7 +30,7 @@ class Model_Query
 	public function update_date_otchet($client)
 	{
 		$query = "UPDATE date_otchet SET date=".time()." WHERE client='".$client."'";
-		//$this->db->query($query);
+		$this->db->query($query);
 	}
 
 	// Добавление нового клиента и дату последнего отчёта
@@ -42,6 +42,13 @@ class Model_Query
 
 	public function add_new_data($data)
 	{
+		$date = mktime(9, 0, 0, date("m"), date("d"), date("Y"));
+
+		if(date("N", $date) == 6 || date("N", $date) == 7)
+		{
+			return 0;
+		}
+
 		$query  = "INSERT INTO data_otchet";
 
 		$query .= " (`".implode("`, `", array_keys($data))."`)";
@@ -51,6 +58,7 @@ class Model_Query
 		$this->db->query($query);
 	}
 
+	// Получить все данные в определённый период
 	public function get_data_on_period($client, $period = 21)
 	{
 		$mounthes = array(
@@ -83,6 +91,7 @@ class Model_Query
 		return $data;
 	}
 
+	// Все задачи данного клиента
 	public function all($client)
 	{
 		if(
@@ -103,6 +112,7 @@ class Model_Query
 		return $result['count'];
 	}
 
+	// Все задачи в работе
 	public function all_in_work($client)
 	{
 		if(!isset($this->clients[$client]['projects']))
@@ -242,7 +252,7 @@ class Model_Query
 			    WHERE cf.id=17
 			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
 			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
-			AND t.name='Ошибки'
+			AND (t.id=1 || t.id=5)
 			AND r.value='".$this->clients[$client]['reliz']."'";
 
 		$result = $this->db->query($query)->fetch_assoc();
@@ -439,7 +449,7 @@ class Model_Query
 			    AND cv.custom_field_id=cf.id) pay ON i.id=pay.customized_id
 			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
 			AND pay.value ".$ocenka."
-			AND st.name=21
+			AND st.id=21
 			AND r.value='".$this->clients[$client]['reliz']."'";
 
 		$result = $this->db->query($query)->fetch_assoc();
@@ -521,7 +531,7 @@ class Model_Query
 			    AND cv.custom_field_id=cf.id) pay ON i.id=pay.customized_id
 			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
 			AND pay.value ".$ocenka."
-			AND st.name=21
+			AND st.id=21
 			AND an.value = '".$this->clients[$client]['analitic']."'
 			AND r.value='".$this->clients[$client]['reliz']."'";
 
@@ -600,7 +610,7 @@ class Model_Query
 			    WHERE cf.id=17
 			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
 			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
-			AND st.name=21
+			AND st.id=21
 			AND (t.id=1 || t.id=5)
 			AND r.value='".$this->clients[$client]['reliz']."'";
 
@@ -674,7 +684,7 @@ class Model_Query
 			    WHERE cf.id=17
 			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
 			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
-			AND st.name=21
+			AND st.id=21
 			AND (t.id=1 || t.id=5)
 			AND an.value = '".$this->clients[$client]['analitic']."'
 			AND r.value='".$this->clients[$client]['reliz']."'";
@@ -727,4 +737,211 @@ class Model_Query
 
 		return $result['count'];
 	}
+
+	// Просрочено на стороне СК более 2 дней
+	public function dedline_on_sk_2_day($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			COUNT(*) as count
+			FROM issues i
+			JOIN issue_statuses st ON i.status_id=st.id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND st.id=16
+			AND TO_DAYS('".date('Y,m,d')."')-TO_DAYS(i.updated_on) > 2
+			AND TO_DAYS('".date('Y,m,d')."')-TO_DAYS(i.updated_on) <= 3
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	// Просрочено на стороне СК более 3 дней
+	public function dedline_on_sk_3_day($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			COUNT(*) as count
+			FROM issues i
+			JOIN issue_statuses st ON i.status_id=st.id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND st.id=16
+			AND TO_DAYS('".date('Y,m,d')."')-TO_DAYS(i.updated_on) > 3
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	// Просрочено на стороне СК более 2 дней мои
+	public function dedline_on_sk_2_day_my($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['analitic'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+
+		$query = "SELECT
+			COUNT(*) as count
+			FROM issues i
+			JOIN issue_statuses st ON i.status_id=st.id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=37
+			    AND cv.custom_field_id=cf.id) an ON i.id=an.customized_id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND st.id=16
+			AND TO_DAYS('".date('Y,m,d')."')-TO_DAYS(i.updated_on) > 2
+			AND TO_DAYS('".date('Y,m,d')."')-TO_DAYS(i.updated_on) <= 3
+			AND an.value = '".$this->clients[$client]['analitic']."'
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	// Просрочено на стороне СК более 3 дней мои
+	public function dedline_on_sk_3_day_my($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['analitic'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			COUNT(*) as count
+			FROM issues i
+			JOIN issue_statuses st ON i.status_id=st.id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=37
+			    AND cv.custom_field_id=cf.id) an ON i.id=an.customized_id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND st.id=16
+			AND TO_DAYS('".date('Y,m,d')."')-TO_DAYS(i.updated_on) > 3
+			AND an.value = '".$this->clients[$client]['analitic']."'
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	// Просрочено в на 10 дней (аналитик+разработчик)
+	public function dedline_10_day($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+
+		$query = "SELECT
+			COUNT(*) as count
+			FROM issues i
+			JOIN issue_statuses st ON i.status_id=st.id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND (st.id=16 OR st.id=16)
+			AND TO_DAYS('".date('Y,m,d')."')-TO_DAYS(i.updated_on) > 10
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+	// Просрочено в на 10 дней (аналитик+разработчик)
+	public function dedline_10_day_my($client)
+	{
+		if(
+			!isset($this->clients[$client]['projects'])||
+			!isset($this->clients[$client]['analitic'])||
+			!isset($this->clients[$client]['reliz'])
+		)
+		{
+			return null;
+		}
+
+		$query = "SELECT
+			COUNT(*) as count
+			FROM issues i
+			JOIN issue_statuses st ON i.status_id=st.id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=37
+			    AND cv.custom_field_id=cf.id) an ON i.id=an.customized_id
+			LEFT JOIN (SELECT cv.customized_id,cv.value
+			    FROM custom_values cv,
+			    custom_fields cf
+			    WHERE cf.id=17
+			    AND cv.custom_field_id=cf.id) r ON i.id=r.customized_id
+			WHERE i.project_id IN(".$this->clients[$client]['projects'].")
+			AND st.id=16
+			AND TO_DAYS('".date('Y,m,d')."')-TO_DAYS(i.updated_on) > 3
+			AND an.value = '".$this->clients[$client]['analitic']."'
+			AND r.value='".$this->clients[$client]['reliz']."'";
+
+		$result = $this->db->query($query)->fetch_assoc();
+
+		return $result['count'];
+	}
+
+
 }

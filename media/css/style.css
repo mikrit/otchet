@@ -83,6 +83,12 @@ table, tr, td{
     color: #4f4f4f;
 }
 
+#header h2{
+    margin: 0 auto;
+    background-color: #fff;
+    font: 20px helveticaneuecyr, Verdana, Tahoma, Arial, Helvetica, sans-serif;;
+}
+
 /* Menu */
 #menu {
     height: 45px;

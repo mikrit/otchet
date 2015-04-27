@@ -195,4 +195,20 @@
 			</td>
 		<?}?>
 	</tr>
+	<tr class="task_2">
+		<td>
+			Просрочено на стороне СК(Более 2 дней)
+		</td>
+		<td>
+			более 3 дней
+		</td>
+		<?foreach($data as $key => $val){?>
+			<td>
+				<?=$val['dedline_on_sk_2_day']?>/<?=$val['dedline_on_sk_3_day']?>
+			</td>
+			<td>
+				<?=$val['dedline_on_sk_2_day_my']?>/<?=$val['dedline_on_sk_3_day_my']?>
+			</td>
+		<?}?>
+	</tr>
 </table>

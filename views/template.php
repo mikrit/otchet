@@ -16,7 +16,10 @@
 		<td>
 			<div id="header">
 				Отчёт по клиенту: <?=$client?><br/>
+				<h2>Релиз: <?=$reliz?><br/>
+				Аналитик: <?=$analitic?></h2><br/>
 			</div>
+
 		</td>
 	</tr>
 	<tr id="menu">
